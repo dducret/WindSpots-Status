@@ -32,11 +32,10 @@
     fwrite($wlHandle, Date("H:i:s").".$micro"." station_report.php: ".$message."\n");
     fclose($wlHandle);
   }
-  //
   // Station name
   // Ex: CHGE01   CH=Country GE=Location 01=Identity
   if(!isset($_POST['station'])) {
-    logIt('ERROR no post.');
+    logIt('ERROR no POST.');
     exit();
   }
   $station = $_POST['station'];
@@ -44,7 +43,7 @@
     logIt('ERROR Station: ' . $station);
     exit();
   }
-  logIt('Station: ' . $station, $station);
+  logIt($station, $station);
   // Station date
   $date = $_POST['date'];
   if(strlen($date) != 15) {
@@ -69,7 +68,7 @@
     exit();
   }
   $data_array = explode("\t",$data);
-  //logIt('Data: '. json_encode($data_array));
+  logIt('Data: '. json_encode($data_array));
   // Station location
   $location = $_POST['location'];
   $location=trim($location);
@@ -79,7 +78,6 @@
   }
   $location_array = explode("\t",$location);
   //logIt('Location: '. json_encode($location_array));
-  
   // format weather station time
   list($hour, $minute) = explode('.', $data_array[0]);
   $min = floor($minute/(1000/6));
@@ -113,9 +111,7 @@
   // 
   $battery = 0;
   if(isset($data_array[6])) {
-    $battery = $data_array[6];
-    if($battery > 100)
-      $battery = 0;
+    $battery = round($data_array[6], 1);
   }
   try { 
     $db = new SQLite3($SQLiteDB); 
@@ -127,24 +123,25 @@
   try { 
     $db->exec("CREATE TABLE IF NOT EXISTS station_report (station TEXT PRIMARY KEY, name TEXT, stndate TEXT, stntime TEXT,
                 direction TEXT, speed TEXT, averagespeed TEXT, temperature TEXT, barometer TEXT, battery TEXT, imageage TEXT,
-                altitude TEXT, latitude TEXT, longitude TEXT)");
+                altitude TEXT, latitude TEXT, longitude TEXT, version TEXT)");
   } catch(Exception $exception) { 
     $db->close();
     logIt('ERROR Create table: '.$exception->getMessage()); 
     die();
   }
   $db->busyTimeout(5000);
+  $stationName = SQLite3::escapeString( $data_array[7] );
   $db->exec("INSERT OR REPLACE INTO station_report (station, name,
             stndate, stntime,
             direction, speed, averagespeed,
             temperature, barometer, battery, imageage,
-            altitude, latitude, longitude) 
-          VALUES('$station', '$data_array[7]',
+            altitude, latitude, longitude, version) 
+          VALUES('$station', '$stationName',
             '$date','$data_array[0]',
             '$data_array[1]','$data_array[2]', '$data_array[3]',
             '$data_array[4]','$data_array[5]', '$battery', '$data_array[8]',
-            '$location_array[0]','$location_array[1]','$location_array[2]')
-            ");
+            '$location_array[0]','$location_array[1]','$location_array[2]',
+            '$data_array[9]')");
   $db->close();
 ?>
 </body>
