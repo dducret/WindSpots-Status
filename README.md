@@ -8,7 +8,7 @@ Each minute, when the station is up, the station send a report on http://status.
 POST data:
 
 <pre>
-  station Station ID			          6 Characters
+  station Station ID			         6 Characters
   date    Station time and date  		14 Charaters PHP "YmdHis"
   data    Array
     stationtime   Station Time HHMMSS
@@ -20,6 +20,7 @@ POST data:
     battery       Battery level (only Solar)
     name          Station Name
     imageage      Image Age in seconds
+    version       Station software version
   location  Array
     altitude      Altitue in meter
     latitude
@@ -44,6 +45,7 @@ station_report store data in SQLite database (insert or if station exists update
 		altitude	TEXT
 		latitude	TEXT
 		longitude	TEXT
+		version		TEXT
 </pre>
 
 http://status.windspots.org/index.php	display a web page with last data received
