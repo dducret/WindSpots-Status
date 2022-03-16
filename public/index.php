@@ -11,18 +11,22 @@ $db = null;
 //
 function station_spot($row) {
   $html = "<tr>\r\n";
-  $html = $html . "\t\t\t<!-- $row[0] - $row[1] - $row[2] - $row[3] - $row[4] - $row[5] - $row[6] - $row[7] - $row[8] - $row[9] - $row[10]-->\r\n\t\t\t";
+  $html = $html . "\t\t\t<!-- $row[0] - $row[1] - $row[2] - $row[3] - $row[4] - $row[5] - $row[6] - $row[7] - $row[8] - $row[9] - $row[10] - $row[11] - $row[12] - $row[13] - $row[14]-->\r\n\t\t\t";
   $ws_station_name = $row[0]; // station
   $ws_short_name = $row[1]; // name
   $ws_time = $row[2]; // Transmit date and time
   $ws_weather_station_time = $row[3]; // time
   $ws_wind_current_dir = $row[4]; // direction
-  $ws_wind_max_speed_kt = $row[5]; // speed
-  $ws_wind_current_speed_kt = $row[6]; // average speed
+  $ws_wind_max_speed_kt = round((floatval($row[5]) * 1.943844),0); // speed
+  $ws_wind_current_speed_kt = round((floatval($row[6]) * 1.943844),0); // average speed
   $ws_air = $row[7]; // temperature
   $ws_barometer = $row[8]; // barometer
   $ws_battery = $row[9]; // battery
   $ws_image_age = $row[10]; // image age
+  $ws_altitude = $row[11]; // altitude
+  $ws_latitude = $row[12]; // latitude
+  $ws_longitude = $row[13]; // longitude
+  $ws_version = $row[14]; // version
   //
   $compass = array(
       "N", "NNE", "NE", "ENE",
@@ -42,6 +46,17 @@ function station_spot($row) {
   $station_time = mktime($hour, $minute, $second, $month, $day, $year);
   $now = time();
   $diff = ceil(($now - $station_time) / (60));
+  // Camera
+  $filestation = $ws_station_name."1";
+  $filename ="/data/sites/www/data/capture/".$filestation.".jpg";
+  $filetime = 0;
+  $filesize = 0;
+  if(file_exists($filename)) {
+    $filetime = filemtime($filename);
+    $filesize = filesize($filename);
+  }
+  $filenow = time();
+  $filediff = ceil(($filenow - $filetime) / (60));
   // Station Name
   $bgcolor="";
   if($diff <= 5) { 
@@ -66,7 +81,9 @@ function station_spot($row) {
   $humanDiff="";
   if($diff > 15)
     $humanDiff = " - " . round(($diff/60),0) . " H";
-    $html = $html . "<a href=\"http://pro.windspots.com/images.php?imagedir=capture&image=".$ws_station_name."1.jpg&uid=&text=Fermer\" target=\"_self\">".$ws_station_name." ".$ws_short_name.$humanDiff."</a></td>";
+    $html = $html . "<a href=\"http://windspots.org/images.php?imagedir=capture&image=".$ws_station_name."1.jpg&uid=&text=Fermer\" target=\"_self\" >".$ws_station_name." ".$ws_short_name.$humanDiff."</a>";
+    $html = $html . "<a href=\"https://www.google.com/maps/search/?api=1&query=".$ws_latitude.",".$ws_longitude."\"  target=\"_blank\" rel=\"noopener noreferrer\">&nbsp;&nbsp;[atitude ".$ws_altitude."m]</a>";
+    $html = $html . "<div style='float:right'>".$ws_version."&nbsp;</div></td>";
   // Station (PC) Status
   if($diff > 15)
     $html = $html . "<td bgcolor=\"#FF3300\"></td>";
@@ -86,18 +103,18 @@ function station_spot($row) {
   }
   // Camera
   if($diff < 15) {
-	  if($ws_image_age > 75) {
-	    if($ws_image_age > 120) {
-	      $html = $html ."<td align=\"center\" bgcolor=\"#FF3300\">&nbsp;</td>";
-	    } else {
-	      $html = $html ."<td align=\"center\" bgcolor=\"#FFFF00\">&nbsp;</td>";
-	    }
-	  } else {
-	    $html = $html ."<td bgcolor=\"#33FF00\">&nbsp;</td>";
-	  }
-	} else {
-		$html = $html ."<td align=\"center\" bgcolor=\"#FF3300\">&nbsp;</td>";
-	}
+    if($ws_image_age > 75) {
+      if($ws_image_age > 120) {
+        $html = $html ."<td align=\"center\" bgcolor=\"#FF3300\">&nbsp;</td>";
+      } else {
+        $html = $html ."<td align=\"center\" bgcolor=\"#FFFF00\">&nbsp;</td>";
+      }
+    } else {
+      $html = $html ."<td bgcolor=\"#33FF00\">&nbsp;</td>";
+    }
+  } else {
+    $html = $html ."<td align=\"center\" bgcolor=\"#FF3300\">&nbsp;</td>";
+  }
   // Battery
   if($ws_battery == 0) {
     $html = $html ."<td align=\"center\" bgcolor=\"#FFFFFF\">&nbsp;</td>";
@@ -170,10 +187,9 @@ function station_spot($row) {
 <!DOCTYPE html>
 <html lang="FR">
   <head>
-    <meta name="robots" content="noindex,nofollow"/>
-    <meta http-equiv="refresh" content="60">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow"/>
     <meta name="description" content="Real-Time Wind Information - Le Vent en Temps R&eacute;el"/>  <meta name="keywords" content="Real-Time, Wind, Information, Vent, Temps R&eacute;el, WindSpots"/>
     <title>WindSpots Station Status</title>
     <style type="text/css">
@@ -188,7 +204,7 @@ function station_spot($row) {
     .style1     { font-family: Arial, Helvetica, sans-serif; font-size: 18pt; font-weight: bold; color: #6666ff }
     </style>
   </head>
-  <body>
+  <body onload="javascript:setTimeout(function(){ location.reload(); },60000);">
     <div align="center" class="style1"><img src="logo.png" alt="logo" /></div>
       <table cellspacing="1" cellpadding="0" border="1" style="border-top: 2px solid #524b98; border-bottom: 2px solid #e0e3ce; border-left: 2px solid #b8b6c1; border-right: 2px solid #8b87a0; width: 100%">
         <tr class="bgkhaki">
@@ -212,7 +228,7 @@ function station_spot($row) {
             print_r($html);
             die();
           }
-          $results = $db->query('SELECT * FROM station_report');
+          $results = $db->query('SELECT * FROM station_report order by station');
           while ($row = $results->fetchArray()) {
             station_spot($row);
           }
@@ -220,7 +236,7 @@ function station_spot($row) {
         ?>
       </table>
     <div class="normal">
-      <br/>Version 1.4 &copy; WindSpots.org 2022<br/>
+      <br/>Version 1.41 &copy; WindSpots.org 2022<br/>
     </div>
   </body>
 </html>
