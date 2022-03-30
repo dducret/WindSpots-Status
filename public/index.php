@@ -80,7 +80,7 @@ function station_spot($row) {
   $html = $html . $bgcolor;
   $humanDiff="";
   if($diff > 15)
-    $humanDiff = " - " . round(($diff/60),0) . " H";
+    $humanDiff = " - " . floor($diff/1440) . " D " . floor(($diff - floor($diff/1440)*1440) / 60) . " H";
     $html = $html . "<a href=\"http://windspots.org/images.php?imagedir=capture&image=".$ws_station_name."1.jpg&uid=&text=Fermer\" target=\"_self\" >".$ws_station_name." ".$ws_short_name.$humanDiff."</a>";
     $html = $html . "<a href=\"https://www.google.com/maps/search/?api=1&query=".$ws_latitude.",".$ws_longitude."\"  target=\"_blank\" rel=\"noopener noreferrer\">&nbsp;&nbsp;[atitude ".$ws_altitude."m]</a>";
     $html = $html . "<div style='float:right'>".$ws_version."&nbsp;</div></td>";
@@ -236,7 +236,7 @@ function station_spot($row) {
         ?>
       </table>
     <div class="normal">
-      <br/>Version 1.41 &copy; WindSpots.org 2022<br/>
+      <br/>Version 1.42 &copy; WindSpots.org 2022<br/>
     </div>
   </body>
 </html>
